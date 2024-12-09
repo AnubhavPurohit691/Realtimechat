@@ -12,7 +12,7 @@ datasource db {
 model user{
   id String @default(cuid()) @id
   fullName String 
-  email String
+  email String @unique
   password String
   conversation conversation[]
   message message[]

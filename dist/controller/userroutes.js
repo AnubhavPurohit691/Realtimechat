@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signin = void 0;
+exports.getme = exports.signin = void 0;
 exports.signup = signup;
 const db_1 = __importDefault(require("../db/db"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -80,9 +80,15 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         return;
     }
-    const token = jsonwebtoken_1.default.sign(existinguser === null || existinguser === void 0 ? void 0 : existinguser.id, process.env.JWT_SECRET || "Nasty");
+    const token = jsonwebtoken_1.default.sign(existinguser.id, process.env.JWT_SECRET || "Nasty");
     res.json({
         token
     });
 });
 exports.signin = signin;
+const getme = (req, res) => {
+    const userId = req.user;
+    console.log(userId);
+    res.status(200).json({ message: "Token is valid" });
+};
+exports.getme = getme;

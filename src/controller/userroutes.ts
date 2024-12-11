@@ -4,6 +4,8 @@ import prisma from "../db/db"
 
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import { Authrequest } from "../middelware/authmiddleware"
+
 
 export async function signup(req:Request,res:Response):Promise<void>{
     try {
@@ -30,6 +32,7 @@ export async function signup(req:Request,res:Response):Promise<void>{
                 email
             }
         })
+
         if(newuser){
             const token=jwt.sign(newuser.id,process.env.JWT_SECRET!)
         res.status(201).json(token)
@@ -79,3 +82,8 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
         token
     })
 }
+export const getme =(req: Authrequest, res: Response): void => {
+    const userId=req.user
+    console.log(userId)
+    res.status(200).json({ message: "Token is valid" });
+  }

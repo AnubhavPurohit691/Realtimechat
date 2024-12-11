@@ -7,16 +7,13 @@ exports.authmiddleware = authmiddleware;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 function authmiddleware(req, res, next) {
     var _a;
-    const token = (_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+    const token = String((_a = req.header("Authorization")) === null || _a === void 0 ? void 0 : _a.split(' ')[1]);
+    console.log(token);
     if (!token) {
-        res.json({
-            message: "first signup and signin"
-        });
+        res.status(403).json({ message: "No token provided." });
     }
     const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || "Nasty");
-    if (!decoded || typeof decoded !== "object" || !decoded.id) {
-        res.status(403).json({ message: "Invalid token." });
-    }
-    req.user = decoded.id;
+    console.log(typeof decoded);
+    req.user = decoded;
     next();
 }

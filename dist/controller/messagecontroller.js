@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendmessage = sendmessage;
 exports.getmessage = getmessage;
+exports.getuser = getuser;
 const db_1 = __importDefault(require("../db/db"));
 function sendmessage(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -85,5 +86,21 @@ function getmessage(req, res) {
             return;
         }
         res.json({ data: conversations.message });
+    });
+}
+function getuser(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const userId = req.user;
+        const getusers = yield db_1.default.user.findMany({
+            where: {
+                id: {
+                    not: userId
+                }
+            },
+            select: {
+                fullName: true
+            }
+        });
+        res.status(200).json(getusers);
     });
 }

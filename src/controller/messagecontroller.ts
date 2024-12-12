@@ -69,7 +69,11 @@ export async function getmessage(req:Authrequest,res:Response){
             }
         },
         include:{
-            message:true
+            message:{
+                orderBy:{
+                    createdAt:"asc"
+                }
+            }
         }
     })
 
@@ -79,4 +83,20 @@ export async function getmessage(req:Authrequest,res:Response){
     }
     res.json({data:conversations.message})
 
+}
+
+export async function getuser(req:Authrequest,res:Response){
+    const userId=req.user
+
+    const getusers=await prisma.user.findMany({
+        where:{
+            id:{
+                not:userId
+            }
+        },
+        select:{
+            fullName:true
+        }
+    })    
+    res.status(200).json(getusers)
 }

@@ -1,102 +1,127 @@
 import express, { Request, Response } from "express";
 import { Authrequest } from "../middelware/authmiddleware";
 import prisma from "../db/db";
+import { users } from "../socket/socket";
 
 export async function sendmessage(req: Authrequest, res: Response): Promise<void> {
-    const userId = req.user; 
-    const { to } = req.params
-    const { body } = req.body; 
+    const userId = req.user;
+    const { to } = req.params;
+    const { body } = req.body;
 
-    if (!body) {
-        res.status(400).json({ message: "Message body is required." });
-        return;
-    }
-
-    let existingConversation = await prisma.conversation.findFirst({
-        where: {
-            user: {
-                some: {
-                    id: { in: [userId, to] } // Check if both sender (userId) and receiver (to) are part of the conversation
-                }
-            }
-        },
-        include: {
-            user: true, // Include the users in the conversation 
+    try {
+        if (!body) {
+            res.status(400).json({ message: "Message body is required." });
+            return;
         }
-    });
 
-    if (!existingConversation) {
-        existingConversation = await prisma.conversation.create({
-            data: {
+        let existingConversation = await prisma.conversation.findFirst({
+            where: {
                 user: {
-                    connect: [
-                        { id: userId }, // Connect the authenticated user
-                        { id: to }       // Connect the recipient user
-                    ]
+                    some: {
+                        id: { in: [userId, to] },
+                    },
+                },
+            },
+            include: {
+                user: true,
+            },
+        });
+
+        if (!existingConversation) {
+            existingConversation = await prisma.conversation.create({
+                data: {
+                    user: {
+                        connect: [
+                            { id: userId },
+                            { id: to },
+                        ],
+                    },
+                },
+                include: {
+                    user: true,
+                },
+            });
+        }
+
+        const newMessage = await prisma.message.create({
+            data: {
+                body: body,
+                conversationId: existingConversation.id,
+                senderId: userId,
+            },
+        });
+
+        // Emit the new message to the other user via Socket.io
+        const io = req.app.get('io');
+        io.to(users[userId]).emit('newMessage', newMessage);  // To the sender
+        io.to(users[to]).emit('newMessage', newMessage);  // To the receiver
+
+        res.status(200).json({
+            message: "Message sent successfully.",
+            data: newMessage,
+        });
+    } catch (error) {
+        res.status(400).json({ message: "Server error!" });
+    }
+}
+
+
+export async function getmessage(req: Authrequest, res: Response) {
+
+    const userId = req.user
+    const { to } = req.params
+
+    try {
+
+        const conversations = await prisma.conversation.findFirst({
+            where: {
+                user: {
+                    some: {
+                        id: { in: [userId, to] }
+                    }
                 }
             },
             include: {
-                user: true, // Return the user data with the conversation
-            }
-        });
-    }
-
-    const newMessage = await prisma.message.create({
-        data: {
-            body: body,
-            conversationId: existingConversation.id, // Associate the message with the conversation
-            senderId: userId // The message sender
-        }
-    });
-
-    res.status(200).json({
-        message: "Message sent successfully.",
-        data: newMessage
-    });
-}
-
-export async function getmessage(req:Authrequest,res:Response){
-
-    const userId=req.user
-    const {to}=req.params
-
-    const conversations = await prisma.conversation.findFirst({
-        where:{
-            user:{
-                some:{
-                    id:{in:[userId,to]}
+                message: {
+                    orderBy: {
+                        createdAt: "asc"
+                    }
                 }
             }
-        },
-        include:{
-            message:{
-                orderBy:{
-                    createdAt:"asc"
-                }
-            }
-        }
-    })
+        })
 
-    if(!conversations){
-        res.json({message:"no conversation found!"})
-        return
+        if (!conversations) {
+            res.json({ message: "no conversation found!" })
+            return
+        }
+        res.json({ data: conversations.message })
+    } catch (error) {
+        res.status(400).json({ message: "server error!" })
     }
-    res.json({data:conversations.message})
+
+
 
 }
 
-export async function getuser(req:Authrequest,res:Response){
-    const userId=req.user
+export async function getuser(req: Authrequest, res: Response) {
 
-    const getusers=await prisma.user.findMany({
-        where:{
-            id:{
-                not:userId
+    const userId = req.user
+
+
+    try {
+        const getusers = await prisma.user.findMany({
+            where: {
+                id: {
+                    not: userId
+                }
+            },
+            select: {
+                fullName: true
             }
-        },
-        select:{
-            fullName:true
-        }
-    })    
-    res.status(200).json(getusers)
+        })
+        res.status(200).json(getusers)
+    } catch (error) {
+        res.status(400).json({ message: "server error!" })
+    }
+
 }

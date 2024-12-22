@@ -1,7 +1,11 @@
 import { Server } from "socket.io";
 import prisma from "../db/db";
 
-export const users :any= {};  // Keeps track of connected users by their ID
+interface userID {
+    [userId:string]:string
+}
+
+export const users :userID= {};  // Keeps track of connected users by their ID
 export default function handlesocket(io:Server){
 
 

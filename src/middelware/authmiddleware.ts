@@ -12,11 +12,11 @@ export function authmiddleware (req:Authrequest,res:Response,next:NextFunction){
       res.status(403).json({ message: "No token provided." });
     }
     
-    const decoded = jwt.verify(token  ,process.env.JWT_SECRET || "Nasty") as string
+    const decoded = jwt.verify(token  ,process.env.JWT_SECRET || "Nasty") as JwtPayload
     
     
     console.log(typeof decoded)
     
-    req.user= decoded
+    req.user= decoded.id
     next()
 }

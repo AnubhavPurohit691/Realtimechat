@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/controller/messagecontroller.ts","./src/controller/userroutes.ts","./src/db/db.ts","./src/middelware/authmiddleware.ts","./src/routes/message.ts","./src/routes/user.ts"],"version":"5.7.2"}
+{"root":["./src/index.ts","./src/zodschema.ts","./src/controller/messagecontroller.ts","./src/controller/userrcontroller.ts","./src/db/db.ts","./src/middelware/authmiddleware.ts","./src/routes/message.ts","./src/routes/user.ts","./src/socket/socket.ts"],"version":"5.7.2"}

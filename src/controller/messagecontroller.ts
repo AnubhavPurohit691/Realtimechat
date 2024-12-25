@@ -18,7 +18,7 @@ export async function sendmessage(req: Authrequest, res: Response): Promise<void
             where: {
                 user: {
                     some: {
-                        id: { in: [userId, to] },
+                        id: { in: [userId as string , to] },
                     },
                 },
             },
@@ -47,13 +47,13 @@ export async function sendmessage(req: Authrequest, res: Response): Promise<void
             data: {
                 body: body,
                 conversationId: existingConversation.id,
-                senderId: userId,
+                senderId: userId as string,
             },
         });
 
         // Emit the new message to the other user via Socket.io
         const io = req.app.get('io');
-        io.to(users[userId]).emit('newMessage', newMessage);  // To the sender
+        io.to(users[userId as string]).emit('newMessage', newMessage);  // To the sender
         io.to(users[to]).emit('newMessage', newMessage);  // To the receiver
 
         res.status(200).json({
@@ -67,7 +67,6 @@ export async function sendmessage(req: Authrequest, res: Response): Promise<void
 
 
 export async function getmessage(req: Authrequest, res: Response) {
-
     const userId = req.user
     const { to } = req.params
 
@@ -77,7 +76,7 @@ export async function getmessage(req: Authrequest, res: Response) {
             where: {
                 user: {
                     some: {
-                        id: { in: [userId, to] }
+                        id: { in: [userId as string, to] }
                     }
                 }
             },
@@ -98,16 +97,10 @@ export async function getmessage(req: Authrequest, res: Response) {
     } catch (error) {
         res.status(400).json({ message: "server error!" })
     }
-
-
-
 }
 
 export async function getuser(req: Authrequest, res: Response) {
-
     const userId = req.user
-
-
     try {
         const getusers = await prisma.user.findMany({
             where: {

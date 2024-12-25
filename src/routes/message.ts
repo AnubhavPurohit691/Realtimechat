@@ -3,9 +3,9 @@ import { getmessage, getuser, sendmessage } from "../controller/messagecontrolle
 import { authmiddleware } from "../middelware/authmiddleware"
 const router = express.Router()
 
-router.post('/sendmessage/:to',authmiddleware as unknown as any,sendmessage as unknown as any)
-router.post('/getmessage/:to',authmiddleware as unknown as any,getmessage as unknown as any)
-router.post('/getconversation',authmiddleware as unknown as any,getuser as unknown as any)
+router.post('/sendmessage/:to',authmiddleware ,sendmessage )
+router.post('/getmessage/:to',authmiddleware ,getmessage )
+router.post('/getconversation',authmiddleware ,getuser )
 
 
 export default router

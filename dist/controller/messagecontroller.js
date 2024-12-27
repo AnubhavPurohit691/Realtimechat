@@ -16,7 +16,6 @@ exports.sendmessage = sendmessage;
 exports.getmessage = getmessage;
 exports.getuser = getuser;
 const db_1 = __importDefault(require("../db/db"));
-const socket_1 = require("../socket/socket");
 function sendmessage(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const userId = req.user;
@@ -62,9 +61,9 @@ function sendmessage(req, res) {
                 },
             });
             // Emit the new message to the other user via Socket.io
-            const io = req.app.get('io');
-            io.to(socket_1.users[userId]).emit('newMessage', newMessage); // To the sender
-            io.to(socket_1.users[to]).emit('newMessage', newMessage); // To the receiver
+            // const io = req.app.get('io');
+            // io.to(users[userId as string]).emit('newMessage', newMessage);  // To the sender
+            // io.to(users[to]).emit('newMessage', newMessage);  // To the receiver
             res.status(200).json({
                 message: "Message sent successfully.",
                 data: newMessage,

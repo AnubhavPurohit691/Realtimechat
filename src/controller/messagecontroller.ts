@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { Authrequest } from "../middelware/authmiddleware";
 import prisma from "../db/db";
-import { users } from "../socket/socket";
+
 
 export async function sendmessage(req: Authrequest, res: Response): Promise<void> {
     const userId = req.user;
@@ -52,9 +52,9 @@ export async function sendmessage(req: Authrequest, res: Response): Promise<void
         });
 
         // Emit the new message to the other user via Socket.io
-        const io = req.app.get('io');
-        io.to(users[userId as string]).emit('newMessage', newMessage);  // To the sender
-        io.to(users[to]).emit('newMessage', newMessage);  // To the receiver
+        // const io = req.app.get('io');
+        // io.to(users[userId as string]).emit('newMessage', newMessage);  // To the sender
+        // io.to(users[to]).emit('newMessage', newMessage);  // To the receiver
 
         res.status(200).json({
             message: "Message sent successfully.",

@@ -5,7 +5,7 @@ import { authmiddleware } from '../middelware/authmiddleware'
 const router = express.Router()
 router.post("/signup",signup)
 router.post("/signin",signin)
-router.get("/getme",authmiddleware as unknown as any,getme as unknown as any)
+router.get("/getme",authmiddleware ,getme )
 
 
 export default router

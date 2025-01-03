@@ -14,8 +14,7 @@ function authmiddleware(req, res, next) {
             return;
         }
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || "Nasty");
-        console.log(typeof decoded);
-        req.user = decoded.id;
+        req.user = decoded.userId;
         next();
     }
     catch (error) {

@@ -8,6 +8,6 @@ const messagecontroller_1 = require("../controller/messagecontroller");
 const authmiddleware_1 = require("../middelware/authmiddleware");
 const router = express_1.default.Router();
 router.post('/sendmessage/:to', authmiddleware_1.authmiddleware, messagecontroller_1.sendmessage);
-router.post('/getmessage/:to', authmiddleware_1.authmiddleware, messagecontroller_1.getmessage);
-router.post('/getconversation', authmiddleware_1.authmiddleware, messagecontroller_1.getuser);
+router.get('/getmessage/:to', authmiddleware_1.authmiddleware, messagecontroller_1.getmessage);
+router.get('/getconversation', authmiddleware_1.authmiddleware, messagecontroller_1.getuser);
 exports.default = router;

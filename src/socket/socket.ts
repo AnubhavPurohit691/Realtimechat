@@ -4,6 +4,7 @@ interface socketuser{
     socket: WebSocket,
     userId:string,
 }
+
 const usersocket:socketuser[]=[]
 export function handlesocket(socket:WebSocket){
     socket.on("message", async(messagedata)=>{

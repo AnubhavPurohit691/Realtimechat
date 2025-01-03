@@ -18,9 +18,7 @@ export function authmiddleware (req:Authrequest,res:Response,next:NextFunction){
    const decoded = jwt.verify(token,process.env.JWT_SECRET || "Nasty") as JwtPayload
    
    
-   console.log(typeof decoded)
-   
-   req.user= decoded.id
+   req.user= decoded.userId
    next()
    } catch (error) {
     res.status(500).json({

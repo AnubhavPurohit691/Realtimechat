@@ -16,23 +16,30 @@ exports.sendmessage = sendmessage;
 exports.getmessage = getmessage;
 exports.getuser = getuser;
 const db_1 = __importDefault(require("../db/db"));
+/**
+ * Send a message between users, creating a conversation if it doesn't exist.
+ */
 function sendmessage(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const userId = req.user;
         const { to } = req.params;
         const { body } = req.body;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized." });
+            return;
+        }
+        if (!to || !body) {
+            res.status(400).json({ message: "Recipient ID and message body are required." });
+            return;
+        }
         try {
-            if (!body) {
-                res.status(400).json({ message: "Message body is required." });
-                return;
-            }
+            // Find or create a conversation where both userId and 'to' are participants
             let existingConversation = yield db_1.default.conversation.findFirst({
                 where: {
-                    user: {
-                        some: {
-                            id: { in: [userId, to] },
-                        },
-                    },
+                    AND: [
+                        { user: { some: { id: userId } } },
+                        { user: { some: { id: to } } },
+                    ],
                 },
                 include: {
                     user: true,
@@ -53,6 +60,7 @@ function sendmessage(req, res) {
                     },
                 });
             }
+            // Create a new message
             const newMessage = yield db_1.default.message.create({
                 data: {
                     body: body,
@@ -60,70 +68,87 @@ function sendmessage(req, res) {
                     senderId: userId,
                 },
             });
-            // Emit the new message to the other user via Socket.io
-            // const io = req.app.get('io');
-            // io.to(users[userId as string]).emit('newMessage', newMessage);  // To the sender
-            // io.to(users[to]).emit('newMessage', newMessage);  // To the receiver
             res.status(200).json({
                 message: "Message sent successfully.",
                 data: newMessage,
             });
         }
         catch (error) {
-            res.status(400).json({ message: "Server error!" });
+            console.error("Error in sendmessage:", error);
+            res.status(500).json({ message: "Server error while sending message." });
         }
     });
 }
+/**
+ * Get messages for a specific conversation between users.
+ */
 function getmessage(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const userId = req.user;
         const { to } = req.params;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized." });
+            return;
+        }
+        if (!to) {
+            res.status(400).json({ message: "Recipient ID is required." });
+            return;
+        }
         try {
-            const conversations = yield db_1.default.conversation.findFirst({
+            const conversation = yield db_1.default.conversation.findFirst({
                 where: {
-                    user: {
-                        some: {
-                            id: { in: [userId, to] }
-                        }
-                    }
+                    AND: [
+                        { user: { some: { id: userId } } },
+                        { user: { some: { id: to } } },
+                    ],
                 },
                 include: {
                     message: {
                         orderBy: {
-                            createdAt: "asc"
-                        }
-                    }
-                }
+                            createdAt: "asc",
+                        },
+                    },
+                },
             });
-            if (!conversations) {
-                res.json({ message: "no conversation found!" });
+            if (!conversation) {
+                res.status(404).json({ message: "No conversation found." });
                 return;
             }
-            res.json({ data: conversations.message });
+            res.status(200).json({ data: conversation.message });
         }
         catch (error) {
-            res.status(400).json({ message: "server error!" });
+            console.error("Error in getmessage:", error);
+            res.status(500).json({ message: "Server error while fetching messages." });
         }
     });
 }
+/**
+ * Get a list of users excluding the authenticated user.
+ */
 function getuser(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const userId = req.user;
+        if (!userId) {
+            res.status(401).json({ message: "Unauthorized." });
+            return;
+        }
         try {
-            const getusers = yield db_1.default.user.findMany({
+            const users = yield db_1.default.user.findMany({
                 where: {
                     id: {
-                        not: userId
-                    }
+                        not: userId,
+                    },
                 },
                 select: {
-                    fullName: true
-                }
+                    fullName: true,
+                    id: true,
+                },
             });
-            res.status(200).json(getusers);
+            res.status(200).json(users);
         }
         catch (error) {
-            res.status(400).json({ message: "server error!" });
+            console.error("Error in getuser:", error);
+            res.status(500).json({ message: "Server error while fetching users." });
         }
     });
 }
